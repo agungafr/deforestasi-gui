@@ -102,11 +102,6 @@ if 'confirm_reset' not in st.session_state:
 
 model = load_trained_model()
 
-# try:
-    logo_img = Image.open("Logo UNDIP.png")
-except FileNotFoundError:
-    logo_img = None # Nanti ditangani di UI
-
 """## Pengaturan Halaman
 
 ### Sidebar Identitas
