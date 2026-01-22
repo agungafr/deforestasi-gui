@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 import zipfile
 
 try:
-  im = Image.open("Logo UNDIP.png")
+  im = Image.open("Logo Undip.png")
 except FileNotFoundError:
   im = "📊"
 
 st.set_page_config(
     page_title="Klasifikasi Area Deforestasi",
-    page_icon=Image.open("Logo UNDIP.png") ,
+    page_icon=Image.open("Logo Undip.png") ,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -97,7 +97,7 @@ if 'uploader_key' not in st.session_state:
 model = load_trained_model()
 
 with st.sidebar:
-    st.image("Logo UNDIP.png", width=70)
+    st.image("Logo Undip.png", width=70)
     st.title("Panel Kontrol")
     st.info("""
     **Identitas Pengembang:**
