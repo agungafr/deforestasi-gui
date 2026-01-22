@@ -36,7 +36,7 @@ st.markdown(
 def load_trained_model():
     # Memuat model CNN MobileNetV2
     try:
-        model_path = 'model_mobilenetv2_amsgrad.h5'
+        model_path = 'model_mobilenetv2_after.keras'
         
         # DEBUG: Cek apakah file ada
         if not os.path.exists(model_path):
