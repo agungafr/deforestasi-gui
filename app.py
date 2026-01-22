@@ -108,7 +108,7 @@ model = load_trained_model()
 """
 
 with st.sidebar:
-    st.image("/content/drive/MyDrive/Dataset CNN Revisi/GUI/assets/Logo UNDIP.png", width=120)
+    st.image("Logo UNDIP.png", width=120)
     st.title("Panel Kontrol")
     st.info("""
     **Identitas Pengembang:**
