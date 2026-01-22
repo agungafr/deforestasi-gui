@@ -174,7 +174,7 @@ with tab2:
                     })
 
                 except Exception as e:
-                    st.error(f"Gagal memproses {file.name}". Error: {e}")
+                    st.error(f"Gagal memproses {file.name}.")
 
                 # Update progress
                 progress_bar.progress((idx + 1) / total)
