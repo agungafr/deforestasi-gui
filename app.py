@@ -149,8 +149,12 @@ with tab2:
 
                 try:
                     # Proses per gambar
+                    file.seek(0)
+                  
                     img = Image.open(file)
                     processed_img = preprocess_image(img)
+
+                    # Prediksi
                     prediction = model.predict(processed_img, verbose=0)
                     prob_val = float(prediction[0][0])
 
@@ -170,7 +174,7 @@ with tab2:
                     })
 
                 except Exception as e:
-                    st.error(f"Error pada file {file.name}")
+                    st.error(f"Gagal memproses {file.name}". Error: {e}")
 
                 # Update progress
                 progress_bar.progress((idx + 1) / total)
