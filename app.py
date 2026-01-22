@@ -166,14 +166,17 @@ with tab2:
                         label = "Non-Deforestasi"
                         conf = 1.0 - prob_val
 
-                    results.append({
+                        item_hasil = {
                         "Nama File": file.name,
                         "Prediksi": label,
                         "Confidence": conf,
                         "Probabilitas Raw": prob_val
-                    })
+                    }
+                    
+                    # Masukkan ke list
+                    results.append(item_hasil)
 
-                    except Exception as e:
+                except Exception as e:
                     st.error(f"Gagal memproses {file.name}. Error: {str(e)}")
 
                 # Update progress
