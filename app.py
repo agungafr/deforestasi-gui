@@ -75,8 +75,7 @@ def preprocess_image(image_data):
     batch_img = np.expand_dims(normalized_img, axis=0)
     return batch_img
 
-"""### Inisialisasi Session State
-Agar data tidak hilang saat pindah tab atau interaksi
+### Inisialisasi Session State
 """
 
 if 'uploaded_images' not in st.session_state:
@@ -86,14 +85,7 @@ if 'prediction_results' not in st.session_state:
 if 'confirm_reset' not in st.session_state:
     st.session_state.confirm_reset = False
 
-"""### Load model"""
-
 model = load_trained_model()
-
-"""## Pengaturan Halaman
-
-### Sidebar Identitas
-"""
 
 with st.sidebar:
     st.image("Logo UNDIP.png", width=100)
@@ -110,11 +102,8 @@ with st.sidebar:
     * **Input:** Citra Satelit
     """)
 
-"""### Tab Halaman"""
 
 tab1, tab2, tab3 = st.tabs(["**📂 1. Upload Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
-
-"""## Halaman Upload Data"""
 
 with tab1:
     st.header("Upload Data Citra")
@@ -200,8 +189,6 @@ with tab2:
             st.session_state.display_results = df_display
 
             st.success("✅ Selesai! Cek hasil detail di Tab 3.")
-
-"""## Halaman laporan dan Info"""
 
 with tab3:
     st.header("Laporan Hasil & Statistik")
