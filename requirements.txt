@@ -4,5 +4,6 @@ numpy
 pandas
 pillow
 matplotlib
-zipfile
+zipfile36
 openpyxl
+
