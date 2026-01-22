@@ -16,7 +16,7 @@ except FileNotFoundError:
 
 st.set_page_config(
     page_title="Klasifikasi Area Deforestasi",
-    page_icon="🌳",
+    page_icon="Logo Undip.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -97,7 +97,7 @@ if 'uploader_key' not in st.session_state:
 model = load_trained_model()
 
 with st.sidebar:
-    st.image("Logo UNDIP.png", width=100)
+    st.image("Logo UNDIP.png", width=70)
     st.title("Panel Kontrol")
     st.info("""
     **Identitas Pengembang:**
