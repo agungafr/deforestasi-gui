@@ -148,7 +148,7 @@ with tab2:
         if st.button("🚀 Jalankan Prediksi", type="primary"):
             # CEK MODEL DULU: Mencegah error 'NoneType'
             if model is None:
-                st.error("❌ Model gagal dimuat. Cek apakah file .h5 sudah ada di GitHub dan ukurannya < 100MB.")
+                st.error("❌ Model gagal dimuat. Cek apakah file model sudah ada di GitHub dan ukurannya < 100MB.")
                 st.stop()
 
             results = []
@@ -209,7 +209,7 @@ with tab2:
                 st.session_state.prediction_results = df_results
                 st.session_state.display_results = df_display
 
-                st.success("✅ Selesai! Cek hasil detail di Tab 3.")
+                st.success("✅ Selesai! Cek hasil detail di Tab 3. Laporan dan Info")
             else:
                 st.warning("⚠️ Tidak ada gambar yang berhasil diproses.")
 
@@ -217,7 +217,7 @@ with tab3:
     st.header("Laporan Hasil & Statistik")
 
     if st.session_state.prediction_results is None:
-        st.info("Data belum diproses. Lakukan klasifikasi di Tab Proses Klasifikasi.")
+        st.info("Data belum diproses. Lakukan klasifikasi di Tab 2. Proses Klasifikasi.")
     else:
         df_res = st.session_state.prediction_results
         df_show = st.session_state.display_results
@@ -236,21 +236,31 @@ with tab3:
         # 2. Visualisasi Grafik & Tabel
         c_chart, c_table = st.columns([1, 2])
 
+        # --- BAGIAN GRAFIK (Fix Indentasi di sini) ---
         with c_chart:
             st.subheader("Grafik Sebaran")
             fig, ax = plt.subplots(figsize=(4,5))
-            bars = ax.bar(['Non-Deforestasi', 'Deforestasi'], [n_non, n_defor], color=['green', 'red'])
+            
+            # Warna custom: Hijau & Merah
+            colors = ['#B22B27', '#71BC68'] 
+            bars = ax.bar(['Non-Defor', 'Defor'], [n_non, n_defor], color=colors)
 
-        for bar in bars:
-            yval = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2, yval, int(yval), ha='center', va='bottom')
+            # Menambahkan angka di atas batang
+            for bar in bars:
+                yval = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2, yval, int(yval), ha='center', va='bottom')
 
             ax.set_title("Distribusi Kelas")
             ax.set_ylabel("Jumlah Citra")
+            
+            # Mempercantik grafik (hapus garis atas & kanan)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
+            
+            # PENTING: st.pyplot dipanggil SEKALI saja dan DI DALAM with c_chart
             st.pyplot(fig, use_container_width=True)
 
+        # --- BAGIAN TABEL ---
         with c_table:
             st.subheader("Tabel Detail")
             st.dataframe(df_show, use_container_width=True, height=350)
@@ -274,6 +284,13 @@ with tab3:
                 use_container_width=True
             )
 
+    # Tombol Reset (Opsional di luar kolom)
+    st.divider()
+    if st.button("🔄 Reset Aplikasi"):
+        st.session_state.uploaded_images = []
+        st.session_state.prediction_results = None
+        st.session_state.display_results = None
+        st.rerun()
     # Tombol Reset
     st.divider()
     if st.button("🔄 Reset Aplikasi"):
