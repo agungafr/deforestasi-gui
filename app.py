@@ -76,7 +76,6 @@ def preprocess_image(image_data):
     return batch_img
 
 ### Inisialisasi Session State
-"""
 
 if 'uploaded_images' not in st.session_state:
     st.session_state.uploaded_images = [] # Menyimpan objek file gambar
