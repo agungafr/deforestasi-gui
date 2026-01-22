@@ -11,8 +11,6 @@ Original file is located at
 Pastikan sudah mengunduh library Python di Google Colab terlebih dahulu.
 """
 
-!pip install streamlit tensorflow numpy pandas pillow matplotlib openpyxl
-
 """Menjalankan modul dari library yang sudah diunduh"""
 
 import streamlit as st
