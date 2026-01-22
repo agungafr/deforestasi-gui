@@ -16,7 +16,7 @@ except FileNotFoundError:
 
 st.set_page_config(
     page_title="Klasifikasi Area Deforestasi",
-    page_icon="Logo Undip.png",
+    page_icon=Image.open("Logo UNDIP.png") ,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -112,34 +112,63 @@ with st.sidebar:
     """)
 
 
-tab1, tab2, tab3 = st.tabs(["**📂 1. Upload Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
+tab1, tab2, tab3 = st.tabs(["**📂 1. *Upload Data***", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
 
 with tab1:
-    st.header("Upload Data Citra")
-    st.write("Fitur ini mendukung upload **Satu Gambar (Tunggal)** maupun **Banyak Gambar (Batch)** sekaligus.")
+    st.header("*Upload* Data Citra")
+    st.write("Fitur ini mendukung *upload* **Satu Gambar**, **Banyak Gambar**, atau **File ZIP**.")
 
+    # 1. Update parameter 'type' agar menerima ZIP
     uploaded_files = st.file_uploader(
         "Tarik file ke sini atau klik browse",
-        type=["jpg", "png", "jpeg"],
+        type=["jpg", "png", "jpeg", "zip"], 
         accept_multiple_files=True,
-        key=str(st.session_state.uploader_key)
+        key=str(st.session_state.get('uploader_key', 0))
     )
 
     if uploaded_files:
-        st.session_state.uploaded_images = uploaded_files
-        st.success(f"✅ {len(uploaded_files)} Citra berhasil dimuat.")
+        valid_images = []
+        
+        for file in uploaded_files:
+            # Cek apakah file adalah ZIP
+            if file.name.lower().endswith(".zip"):
+                try:
+                    with zipfile.ZipFile(file) as z:
+                        for filename in z.namelist():
+                            if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                                with z.open(filename) as f:
+                                    # Baca file gambar dari ZIP ke memory
+                                    img_bytes = io.BytesIO(f.read())
+                                    img_bytes.name = filename
+                                    valid_images.append(img_bytes)
+                except Exception as e:
+                    st.error(f"Gagal mengekstrak {file.name}: {e}")
+            
+            # Jika bukan ZIP (file gambar biasa)
+            else:
+                valid_images.append(file)
+        
+        # Simpan hasil akhir (list gambar) ke session state
+        st.session_state.uploaded_images = valid_images
+        
+        if len(valid_images) > 0:
+            st.success(f"✅ Berhasil memuat {len(valid_images)} citra.")
 
-        # Preview gambar
-        st.subheader("Preview Citra")
-        cols = st.columns(5)
-        for i, file in enumerate(uploaded_files[:10]):
-            img = Image.open(file)
-            with cols[i % 5]:
-                st.image(img, caption=file.name, use_container_width=True)
+            # Preview gambar
+            st.subheader("Preview Citra")
+            cols = st.columns(5)
+            for i, file in enumerate(valid_images[:10]):
+                try:
+                    img = Image.open(file)
+                    with cols[i % 5]:
+                        st.image(img, caption=file.name, use_container_width=True)
+                except:
+                    pass
 
-        if len(uploaded_files) > 10:
-            st.info(f"... dan {len(uploaded_files)-10} citra lainnya.")
-
+            if len(valid_images) > 10:
+                st.info(f"... dan {len(valid_images)-10} citra lainnya.")
+        else:
+            st.warning("⚠️ File ZIP kosong atau tidak berisi gambar yang didukung.")
 with tab2:
     st.header("Hasil Klasifikasi")
 
