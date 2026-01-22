@@ -121,7 +121,7 @@ with tab1:
     uploaded_files = st.file_uploader(
         "Tarik file ke sini atau klik browse",
         type=["jpg", "png", "jpeg"],
-        accept_multiple_files=True
+        accept_multiple_files=True,
         key=str(st.session_state.uploader_key)
     )
 
