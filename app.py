@@ -284,13 +284,6 @@ with tab3:
                 use_container_width=True
             )
 
-    # Tombol Reset (Opsional di luar kolom)
-    st.divider()
-    if st.button("🔄 Reset Aplikasi"):
-        st.session_state.uploaded_images = []
-        st.session_state.prediction_results = None
-        st.session_state.display_results = None
-        st.rerun()
     # Tombol Reset
     st.divider()
     if st.button("🔄 Reset Aplikasi"):
