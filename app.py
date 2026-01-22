@@ -146,71 +146,71 @@ with tab2:
         st.write(f"Siap melakukan klasifikasi pada **{len(st.session_state.uploaded_images)}** data citra.")
 
             if st.button("🚀 Jalankan Prediksi", type="primary"):
-            # Cek model
-            if model is None:
-                st.error("❌ Model belum dimuat dengan benar. Cek pesan error di bagian atas aplikasi (Tab Upload(.")
-                st.stop()
+                # Cek model
+                if model is None:
+                    st.error("❌ Model belum dimuat dengan benar. Cek pesan error di bagian atas aplikasi (Tab 1. Upload Data).")
+                    st.stop()
 
-            results = []
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            total = len(st.session_state.uploaded_images)
+                results = []
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                total = len(st.session_state.uploaded_images)
 
-            for idx, file in enumerate(st.session_state.uploaded_images):
-                status_text.text(f"Memproses: {file.name} ({idx+1}/{total})")
+                for idx, file in enumerate(st.session_state.uploaded_images):
+                    status_text.text(f"Memproses: {file.name} ({idx+1}/{total})")
 
-                try:
-                    # 1. Reset pointer & Baca Gambar
-                    file.seek(0)
-                    img = Image.open(file)
-                    processed_img = preprocess_image(img)
+                    try:
+                        # 1. Reset pointer & Baca Gambar
+                        file.seek(0)
+                        img = Image.open(file)
+                        processed_img = preprocess_image(img)
 
-                    # 2. Prediksi
-                    prediction = model.predict(processed_img, verbose=0)
-                    prob_val = float(prediction[0][0])
+                        # 2. Prediksi
+                        prediction = model.predict(processed_img, verbose=0)
+                        prob_val = float(prediction[0][0])
 
-                    # 3. Tentukan Label
-                    if prob_val > 0.5:
-                        label = "Deforestasi"
-                        conf = prob_val
-                    else:
-                        label = "Non-Deforestasi"
-                        conf = 1.0 - prob_val
+                        # 3. Tentukan Label
+                        if prob_val > 0.5:
+                            label = "Deforestasi"
+                            conf = prob_val
+                        else:
+                            label = "Non-Deforestasi"
+                            conf = 1.0 - prob_val
 
-                    # 4. Simpan ke variabel
-                    item_hasil = {
-                        "Nama File": file.name,
-                        "Prediksi": label,
-                        "Confidence": conf,
-                        "Probabilitas Raw": prob_val
-                    }
+                        # 4. Simpan ke variabel
+                        item_hasil = {
+                            "Nama File": file.name,
+                            "Prediksi": label,
+                            "Confidence": conf,
+                            "Probabilitas Raw": prob_val
+                        }
                     
-                  results.append(item_hasil)
+                        results.append(item_hasil)
 
                   except Exception as e:
-                  st.error(f"Gagal memproses {file.name}. Error: {str(e)}")
+                        st.error(f"Gagal memproses {file.name}. Error: {str(e)}")
 
-                # Update progress
-                progress_bar.progress((idx + 1) / total)
+                  # Update progress
+                  progress_bar.progress((idx + 1) / total)
 
-            # Selesai loop
-            status_text.text("Klasifikasi Selesai!")
-            progress_bar.empty()
+               # Selesai loop
+              status_text.text("Klasifikasi Selesai!")
+              progress_bar.empty()
 
-            # Cek hasil
-            if len(results) > 0:
-                df_results = pd.DataFrame(results)
-                df_display = df_results.copy()
+              # Cek hasil
+              if len(results) > 0:
+                  df_results = pd.DataFrame(results)
+                  df_display = df_results.copy()
                 
-                if 'Confidence' in df_display.columns:
-                    df_display['Confidence'] = df_display['Confidence'].apply(lambda x: f"{x*100:.2f}%")
+                  if 'Confidence' in df_display.columns:
+                        df_display['Confidence'] = df_display['Confidence'].apply(lambda x: f"{x*100:.2f}%")
 
-                st.session_state.prediction_results = df_results
-                st.session_state.display_results = df_display
+                  st.session_state.prediction_results = df_results
+                  st.session_state.display_results = df_display
 
-                st.success("✅ Selesai! Cek hasil detail di Tab 3. Laporan & Info.")
-            else:
-                st.warning("⚠️ Tidak ada gambar yang berhasil diproses.")
+                  st.success("✅ Selesai! Cek hasil detail di Tab 3. Laporan & Info.")
+              else:
+                  st.warning("⚠️ Tidak ada gambar yang berhasil diproses.")
 
 with tab3:
     st.header("Laporan Hasil & Statistik")
