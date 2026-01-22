@@ -91,6 +91,8 @@ if 'prediction_results' not in st.session_state:
     st.session_state.prediction_results = None # Menyimpan hasil DataFrame
 if 'confirm_reset' not in st.session_state:
     st.session_state.confirm_reset = False
+if 'uploader_key' not in st.session_state:
+    st.session_state.uploader_key = 0
 
 model = load_trained_model()
 
@@ -119,7 +121,8 @@ with tab1:
     uploaded_files = st.file_uploader(
         "Tarik file ke sini atau klik browse",
         type=["jpg", "png", "jpeg"],
-        accept_multiple_files=True # Ini yang memungkinkan Batch Processing
+        accept_multiple_files=True
+        key=str(st.session_state.uploader_key)
     )
 
     if uploaded_files:
@@ -290,4 +293,6 @@ with tab3:
         st.session_state.uploaded_images = []
         st.session_state.prediction_results = None
         st.session_state.display_results = None
+
+        st.session_state.uploader_key += 1
         st.rerun()
