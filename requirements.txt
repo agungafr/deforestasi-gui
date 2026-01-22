@@ -6,4 +6,3 @@ pillow
 matplotlib
 zipfile36
 openpyxl
-
