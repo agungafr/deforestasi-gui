@@ -36,7 +36,7 @@ st.markdown(
 def load_trained_model():
     # Memuat model CNN MobileNetV2 yang sudah dilatih.
     try:
-        model_path = 'model_mobilenetv2_amsgrad.h5'
+        model_path = 'model_mobilenetv2_after.h5'
         model = tf.keras.models.load_model(model_path)
         return model
     except Exception as e:
