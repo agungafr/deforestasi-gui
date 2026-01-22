@@ -159,7 +159,7 @@ with tab2:
     st.header("Hasil Klasifikasi")
 
     if not st.session_state.uploaded_images:
-        st.warning("⚠️ Silakan upload gambar terlebih dahulu di Tab 1.")
+        st.warning("⚠️ Silakan upload gambar terlebih dahulu di Tab Upload Data.")
     else:
         st.write(f"Siap melakukan klasifikasi pada **{len(st.session_state.uploaded_images)}** data citra.")
 
@@ -221,7 +221,7 @@ with tab3:
     st.header("Laporan Hasil & Statistik")
 
     if st.session_state.prediction_results is None:
-        st.info("Data belum diproses. Lakukan klasifikasi di Tab 2.")
+        st.info("Data belum diproses. Lakukan klasifikasi di Tab Proses Klasifikasi.")
     else:
         df_res = st.session_state.prediction_results
         df_show = st.session_state.display_results
