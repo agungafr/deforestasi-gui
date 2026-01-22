@@ -173,8 +173,8 @@ with tab2:
                         "Probabilitas Raw": prob_val
                     })
 
-                except Exception as e:
-                    st.error(f"Gagal memproses {file.name}.")
+                    except Exception as e:
+                    st.error(f"Gagal memproses {file.name}. Error: {str(e)}")
 
                 # Update progress
                 progress_bar.progress((idx + 1) / total)
@@ -183,15 +183,19 @@ with tab2:
             status_text.text("Klasifikasi Selesai!")
             progress_bar.empty()
 
-            # Simpan hasil
-            df_results = pd.DataFrame(results)
-            df_display = df_results.copy()
-            df_display['Confidence'] = df_display['Confidence'].apply(lambda x: f"{x*100:.2f}%")
+            if len(results) > 0:
+                df_results = pd.DataFrame(results)
+                df_display = df_results.copy()
+                
+                if 'Confidence' in df_display.columns:
+                    df_display['Confidence'] = df_display['Confidence'].apply(lambda x: f"{x*100:.2f}%")
 
-            st.session_state.prediction_results = df_results
-            st.session_state.display_results = df_display
+                st.session_state.prediction_results = df_results
+                st.session_state.display_results = df_display
 
-            st.success("✅ Selesai! Cek hasil detail di Tab 3.")
+                st.success("✅ Selesai! Cek hasil detail di Tab 3.")
+            else:
+                st.warning("⚠️ Tidak ada gambar yang berhasil diproses. Silakan cek pesan error di atas.")
 
 with tab3:
     st.header("Laporan Hasil & Statistik")
