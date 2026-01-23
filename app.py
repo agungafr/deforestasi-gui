@@ -200,18 +200,69 @@ with tab1:
                 st.info(f"... dan {len(valid_images)-10} citra lainnya.")
         else:
             st.warning("⚠️ File ZIP kosong atau tidak berisi gambar yang didukung.")
+          
 with tab2:
-    st.header("Hasil Klasifikasi")
+    st.header("⚙️ *Pre-processing* & Klasifikasi")
 
     if not st.session_state.uploaded_images:
-        st.warning("⚠️ Silakan upload gambar terlebih dahulu di Tab Upload Data.")
+        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1. *Upload* Data")
     else:
-        st.write(f"Siap melakukan klasifikasi pada **{len(st.session_state.uploaded_images)}** data citra.")
+        # --- BAGIAN 1: INFO PIPELINE (CHECKLIST WAJIB) ---
+        st.subheader("1. *Pipeline Pre-processing*")
+        st.markdown("""
+        Model MobileNetV2 mewajibkan data citra melalui tahapan standarisasi berikut sebelum diklasifikasikan:
+        """)
+        
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.success("✅ **Resizing (224x224)**\n\nMenyamakan dimensi input.")
+        with c2:
+            st.success("✅ **Normalisasi Pixel**\n\nMengubah rentang nilai ke 0-1.")
+        with c3:
+            st.success("✅ **Array Conversion**\n\nUbah ke Tensor 3D (RGB).")
+
+        # --- BAGIAN 2: PREVIEW DATA (10 SAMPEL PERTAMA) ---
+        st.subheader(f"2. *Preview* Data Setelah *Pre-processing*")
+        
+        with st.expander("🔍 Lihat Sampel Hasil *Pre-processing*", expanded=True):
+            st.write("Menampilkan 10 data pertama yang telah di-resize dan siap masuk ke model:")
+            
+            # Ambil maksimal 10 gambar
+            preview_limit = 10
+            samples = st.session_state.uploaded_images[:preview_limit]
+            
+            # Grid layout (5 kolom)
+            cols = st.columns(5)
+            
+            for i, file in enumerate(samples):
+                try:
+                    file.seek(0)
+                    img = Image.open(file)
+                    
+                    # Simulasi Pre-processing Visual (Resize saja agar terlihat)
+                    # Kita pakai Image.LANCZOS sama seperti fungsi preprocess_image
+                    img_resized = ImageOps.fit(img, (224, 224), Image.LANCZOS)
+                    
+                    with cols[i % 5]:
+                        # Tampilkan gambar yang SUDAH di-resize (Pre-processed)
+                        st.image(img_resized, caption=f"Input {i+1}: 224x224px", use_container_width=True)
+                        st.caption(f"📄 {file.name}")
+                except Exception as e:
+                    continue
+
+            if len(st.session_state.uploaded_images) > preview_limit:
+                st.info(f"... dan {len(st.session_state.uploaded_images) - preview_limit} data lainnya akan diproses di latar belakang.")
+
+        st.divider()
+
+        # --- BAGIAN 3: EKSEKUSI KLASIFIKASI ---
+        st.subheader("3. Eksekusi Model")
+        st.write("Data sudah siap. Klik tombol di bawah untuk memulai pemindaian.")
 
         if st.button("🚀 Jalankan Prediksi", type="primary"):
-            # CEK MODEL DULU: Mencegah error 'NoneType'
+            # CEK MODEL DULU
             if model is None:
-                st.error("❌ Model gagal dimuat. Cek apakah *file* model sudah dimuat dan ukurannya < 100MB.")
+                st.error("❌ Model gagal dimuat. Cek file .h5 Anda.")
                 st.stop()
 
             results = []
@@ -220,19 +271,21 @@ with tab2:
             total = len(st.session_state.uploaded_images)
 
             for idx, file in enumerate(st.session_state.uploaded_images):
-                status_text.text(f"Memproses: {file.name} ({idx+1}/{total})")
+                status_text.text(f"Sedang memproses: {file.name} ({idx+1}/{total})")
 
                 try:
                     # 1. Reset pointer & Baca Gambar
                     file.seek(0)
                     img = Image.open(file)
+                    
+                    # 2. Pre-processing Real (Sesuai fungsi)
                     processed_img = preprocess_image(img)
 
-                    # 2. Prediksi
+                    # 3. Prediksi
                     prediction = model.predict(processed_img, verbose=0)
                     prob_val = float(prediction[0][0])
 
-                    # 3. Tentukan Label
+                    # 4. Tentukan Label
                     if prob_val > 0.5:
                         label = "Deforestasi"
                         conf = prob_val
@@ -240,15 +293,13 @@ with tab2:
                         label = "Non-Deforestasi"
                         conf = 1.0 - prob_val
 
-                    # 4. Simpan ke variabel
+                    # 5. Simpan Hasil
                     item_hasil = {
                         "Nama File": file.name,
                         "Prediksi": label,
-                        "*Confidence*": conf,
-                        "Probabilitas *Raw*": prob_val
+                        "Confidence": conf,
+                        "Probabilitas Raw": prob_val
                     }
-                    
-                    # 5. Masukkan ke list
                     results.append(item_hasil)
 
                 except Exception as e:
@@ -258,7 +309,7 @@ with tab2:
                 progress_bar.progress((idx + 1) / total)
 
             # Selesai loop
-            status_text.text("Klasifikasi Selesai!")
+            status_text.text("✅ Klasifikasi Selesai!")
             progress_bar.empty()
 
             # Cek hasil
@@ -272,7 +323,9 @@ with tab2:
                 st.session_state.prediction_results = df_results
                 st.session_state.display_results = df_display
 
-                st.success("✅ Selesai! Cek hasil detail di Tab 3. Laporan dan Info")
+                st.success("✅ Analisis Selesai! Silakan cek tab 'Laporan & Info' untuk hasil detail.")
+                # Opsional: Tampilkan tabel preview kecil di sini juga
+                st.dataframe(df_display.head(), use_container_width=True)
             else:
                 st.warning("⚠️ Tidak ada gambar yang berhasil diproses.")
 
