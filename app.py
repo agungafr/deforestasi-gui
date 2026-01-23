@@ -117,7 +117,7 @@ with st.sidebar:
     * **Input:** Citra Satelit
     """)
 
-st.title("🌲 Klasifikasi Area Deforestasi")
+st.title("🌳 Klasifikasi Area Deforestasi")
 st.markdown("Dikembangkan oleh **Agung Afrizal**")
 
 with st.expander("ℹ️ Tentang Aplikasi dan Model"):
@@ -259,9 +259,9 @@ with tab2:
             with c1:
                 st.success("✅ ***Resizing*** **(224x224)**\n\nMenyesuaikan dimensi input CNN MobileNetV2.")
             with c2:
-                st.success("✅ **Normalisasi (1./255)**\n\nMengubah range piksel dari 0-255 ke 0-1.")
+                st.success("✅ **Normalisasi (1./255)**\n\nMengubah *range* piksel dari 0-255 ke 0-1.")
             with c3:
-                st.success("✅ ***Tensor Conversion***\n\nMengubah citra menjadi array 3D RGB (*Red*, *Green*, *Blue*) sesuai standar CNN MobileNetV2.")
+                st.success("✅ ***Tensor Conversion***\n\nMengubah citra menjadi *array* 3D RGB (*Red*, *Green*, *Blue*) sesuai standar CNN MobileNetV2.")
 
             st.divider()
 
