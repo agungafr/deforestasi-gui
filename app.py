@@ -38,7 +38,7 @@ def load_trained_model():
     try:
         model_path = 'model_mobilenetv2_after.keras'
         
-        # DEBUG: Cek apakah file ada
+        # DEBUG
         if not os.path.exists(model_path):
             st.error(f"❌ File model '{model_path}' **tidak ditemukan** di direktori ini!")
             st.write(f"Isi folder saat ini: {os.listdir('.')}")
@@ -138,7 +138,7 @@ with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     Model CNN MobileNetV2 yang telah dioptimasi dengan AMSGrad menunjukkan performa yang sangat baik. Model menghasilkan akurasi pengujian sebesar 100% dengan nilai *Loss Testing* 0,0108
     """)
 
-    # BAGIAN KUNING (Ketentuan Penggunaan Data)
+    # Penggunaan Data
     st.warning("""
     **Ketentuan Penggunaan Data**
     
@@ -179,7 +179,7 @@ with tab1:
                 except Exception as e:
                     st.error(f"Gagal mengekstrak {file.name}: {e}")
             
-            # Jika bukan ZIP (file gambar biasa)
+            # Jika bukan ZIP
             else:
                 valid_images.append(file)
         
@@ -247,7 +247,7 @@ with tab2:
 
             st.divider()
 
-            st.subheader("1. **Pipeline *Pre-processing* (Inference)**")
+            st.subheader("1. **Tahap** ***Pre-processing***")
             st.info("""
             **Catatan:** Augmentasi Data (Rotasi/*Flip*) hanya dilakukan saat fase ***Training*** **Data** dalam tahap pemodelan. 
             Pada aplikasi ini, citra diproses **tanpa distorsi** untuk menjaga keaslian data.
@@ -379,13 +379,13 @@ with tab3:
         # 2. Visualisasi Grafik & Tabel
         c_chart, c_table = st.columns([1, 2])
 
-        # --- BAGIAN GRAFIK (Fix Indentasi di sini) ---
+        # Grafik
         with c_chart:
             st.subheader("Grafik Sebaran")
             fig, ax = plt.subplots(figsize=(4,5))
             
             # Warna custom: Hijau & Merah
-            colors = ['#B22B27', '#71BC68'] 
+            colors = ['#71BC68', '#B22B27'] 
             bars = ax.bar(['Non-Deforestasi', 'Deforestasi'], [n_non, n_defor], color=colors)
 
             # Menambahkan angka di atas batang
@@ -402,7 +402,7 @@ with tab3:
 
         # Tabel
         with c_table:
-            st.subheader("Tabel Detail")
+            st.subheader("Tabel Klasifikasi")
             st.dataframe(df_show, use_container_width=True, height=350)
 
             # Tombol Unduh
