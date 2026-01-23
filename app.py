@@ -65,7 +65,7 @@ def convert_df_to_excel(df):
 def preprocess_image(image_data):
     """
     Preprocessing citra agar sesuai input MobileNetV2:
-    1. Resize ke 224x224
+    1. *Resize* ke 224x224
     2. Konversi ke Array
     3. Normalisasi (1./255)
     """
@@ -117,17 +117,17 @@ st.markdown("Dikembangkan oleh **Agung Afrizal**")
 with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     st.markdown("""
     **Deskripsi Penelitian:**
-    Aplikasi ini dirancang untuk melakukan klasifikasi area deforestasi berdasarkan citra satelit ke dalam dua kategori, yaitu deforestasi dan non-deforestasi. Tujuan utama aplikasi ini adalah membantu proses pemantauan dan identifikasi perubahan tutupan hutan secara otomatis dengan memanfaatkan pendekatan deep learning. Aplikasi ini dapat menjadi tolak ukur *Early Warning* aktivitas deforestasi sehingga dapat dilakukan mitigasi lebih awal.
+    Aplikasi ini dirancang untuk melakukan klasifikasi area deforestasi berdasarkan citra satelit ke dalam dua kategori, yaitu deforestasi dan non-deforestasi. Tujuan utama aplikasi ini adalah membantu proses pemantauan dan identifikasi perubahan tutupan hutan secara otomatis dengan memanfaatkan pendekatan *deep learning*. Aplikasi ini dapat menjadi tolak ukur *Early Warning* aktivitas deforestasi sehingga dapat dilakukan mitigasi lebih awal.
     
     **Mekanisme Model:** 
     Model yang digunakan dalam aplikasi ini adalah ***Convolutional Neural Network*** **(CNN) dengan arsitektur MobileNetV2**, yang dikenal efisien secara komputasi dan cocok untuk pemrosesan citra berukuran besar seperti citra satelit. Untuk meningkatkan stabilitas konvergensi dan performa model, proses pelatihan dipadukan dengan algoritma optimasi **AMSGrad**, yaitu varian dari Adam yang menggunakan estimasi momen kedua yang lebih konservatif sehingga mampu mengurangi fluktuasi *learning rate* dan menjaga kestabilan proses pelatihan.
 
-    **Akurasi Model Pengujian:**
-    Dataset yang digunakan terdiri dari 134 citra satelit Google Earth wilayah Amerika Selatan, yang dibagi menjadi data *training* (51%), data *validation* (19%), dan *data testing* (30%).
-    
     Sistem mengklasifikasikan citra ke dalam dua kategori biner:
     * **Non-Deforestasi:** Meliputi area hutan (*Forest*), vegetasi herba, sungai, dan danau.
     * **Deforestasi:** Meliputi area lahan pertanian (*Annual/Permanent Crop*), padang rumput (*Pasture*), jalan raya, pemukiman, dan kawasan industri.
+
+    **Akurasi Model Pengujian:**
+    Dataset yang digunakan terdiri dari 134 citra satelit Google Earth wilayah Amerika Selatan, yang dibagi menjadi data *training* (51%), data *validation* (19%), dan *data testing* (30%).
 
     Model CNN MobileNetV2 yang telah dioptimasi dengan AMSGrad menunjukkan performa yang sangat baik. Model menghasilkan akurasi pengujian sebesar 100% dengan nilai *Loss Testing* 0,0108
     """)
@@ -136,12 +136,12 @@ with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     st.warning("""
     **Ketentuan Penggunaan Data**
     
-    1.  **Data** ***Upload*** **:** Pengguna dapat mengunggah data citra satelit hutan dengan format citra **.jpg**, **.jpeg**, atau **.png**.
+    1.  **Data** ***Upload*** **:** Pengguna dapat mengunggah data citra satelit hutan dengan format citra **.jpg**, **.jpeg**, **.png**, maupun **file ZIP** yang berisi *batch dataset*.
     2.  **Jenis Data:** Model dilatih menggunakan data citra satelit optik (*RGB*). Penggunaan foto objek non-geospasial (misal: foto benda atau manusia) akan menghasilkan prediksi yang tidak valid.
-    3.  ***Pre-processing*** **:** Sistem akan secara otomatis melakukan *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (rescaling 1./255) sesuai standar *input layer* MobileNetV2, melakukan Augmentasi Data sebelum melakukan prediksi.
+    3.  ***Pre-processing*** **:** Sistem akan secara otomatis melakukan *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (*rescaling* 1./255) sesuai standar *input layer* MobileNetV2, serta melakukan Augmentasi Data sebelum melakukan prediksi.
     """)
 
-tab1, tab2, tab3 = st.tabs(["**📂 1. *Upload Data***", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
+tab1, tab2, tab3 = st.tabs(["**📂 1. ***Upload*** **Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
 
 with tab1:
     st.header("*Upload* Data Citra")
@@ -149,7 +149,7 @@ with tab1:
 
     # 1. Update parameter 'type' agar menerima ZIP
     uploaded_files = st.file_uploader(
-        "Tarik file ke sini atau klik browse",
+        "Tarik file ke sini atau klik *browse*",
         type=["jpg", "png", "jpeg", "zip"], 
         accept_multiple_files=True,
         key=str(st.session_state.get('uploader_key', 0))
@@ -184,7 +184,7 @@ with tab1:
             st.success(f"✅ Berhasil memuat {len(valid_images)} citra.")
 
             # Preview gambar
-            st.subheader("Preview Citra")
+            st.subheader("*Preview* Citra")
             cols = st.columns(5)
             for i, file in enumerate(valid_images[:10]):
                 try:
@@ -209,7 +209,7 @@ with tab2:
         if st.button("🚀 Jalankan Prediksi", type="primary"):
             # CEK MODEL DULU: Mencegah error 'NoneType'
             if model is None:
-                st.error("❌ Model gagal dimuat. Cek apakah file model sudah ada di GitHub dan ukurannya < 100MB.")
+                st.error("❌ Model gagal dimuat. Cek apakah *file* model sudah dimuat dan ukurannya < 100MB.")
                 st.stop()
 
             results = []
@@ -242,8 +242,8 @@ with tab2:
                     item_hasil = {
                         "Nama File": file.name,
                         "Prediksi": label,
-                        "Confidence": conf,
-                        "Probabilitas Raw": prob_val
+                        "*Confidence*": conf,
+                        "Probabilitas *Raw*": prob_val
                     }
                     
                     # 5. Masukkan ke list
@@ -329,7 +329,7 @@ with tab3:
             # Tombol Download
             csv = convert_df_to_csv(df_res)
             st.download_button(
-                label="📥 Download CSV",
+                label="📥 Unduh CSV",
                 data=csv,
                 file_name='hasil_prediksi_deforestasi.csv',
                 mime='text/csv',
@@ -338,7 +338,7 @@ with tab3:
 
             excel_data = convert_df_to_excel(df_res)
             st.download_button(
-                label="📥 Download Excel",
+                label="📥 Unduh Excel",
                 data=excel_data,
                 file_name='hasil_prediksi_deforestasi.xlsx',
                 mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
