@@ -97,7 +97,9 @@ if 'uploader_key' not in st.session_state:
 model = load_trained_model()
 
 with st.sidebar:
-    st.image("Logo Undip.png", use_container_width=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("Logo Undip.png", use_container_width=True)
     st.title("Panel Kontrol")
     st.info("""
     **Identitas Pengembang:**
@@ -141,7 +143,7 @@ with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     3.  ***Pre-processing*** **:** Sistem akan secara otomatis melakukan *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (*rescaling* 1./255) sesuai standar *input layer* MobileNetV2, serta melakukan Augmentasi Data sebelum melakukan prediksi.
     """)
 
-tab1, tab2, tab3 = st.tabs(["**📂 1. ***Upload*** **Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
+tab1, tab2, tab3 = st.tabs(["**📂 1.** ***Upload*** **Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
 
 with tab1:
     st.header("*Upload* Data Citra")
