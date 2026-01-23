@@ -143,7 +143,7 @@ with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     3.  ***Pre-processing*** **:** Sistem akan secara otomatis melakukan *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (*rescaling* 1./255) sesuai standar *input layer* MobileNetV2, serta melakukan Augmentasi Data sebelum melakukan prediksi.
     """)
 
-tab1, tab2, tab3 = st.tabs(["**📂 1.** ***Upload*** **Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Info**"])
+tab1, tab2, tab3 = st.tabs(["**📂 1.** ***Upload*** **Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Informasi**"])
 
 with tab1:
     st.header("*Upload* Data Citra")
@@ -205,64 +205,67 @@ with tab2:
     st.header("⚙️ *Pre-processing* & Klasifikasi")
 
     if not st.session_state.uploaded_images:
-        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1. *Upload* Data")
+        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1.")
     else:
-        # --- BAGIAN 1: INFO PIPELINE (CHECKLIST WAJIB) ---
-        st.subheader("1. *Pipeline Pre-processing*")
-        st.markdown("""
-        Model MobileNetV2 mewajibkan data citra melalui tahapan standarisasi berikut sebelum diklasifikasikan:
+        # --- BAGIAN 1: INFO PIPELINE (Berdasarkan BAB 3 Skripsi) ---
+        st.subheader("1. **Pipeline Pre-processing (Inference)**")
+        st.info("""
+        **Catatan:** Sesuai metodologi, Augmentasi Data (Rotasi/Flip) hanya dilakukan saat fase ***Training*** **Data**. 
+        Pada fase aplikasi ini, citra diproses **tanpa distorsi** untuk menjaga keaslian data.
         """)
         
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.success("✅ **Resizing (224x224)**\n\nMenyamakan dimensi input.")
+            st.success("✅ ***Resizing*** **(224x224)**\n\nMenyesuaikan dimensi input CNN MobileNetV2.")
         with c2:
-            st.success("✅ **Normalisasi Pixel**\n\nMengubah rentang nilai ke 0-1.")
+            st.success("✅ **Normalisasi (1./255)**\n\nMengubah range piksel dari 0-255 ke 0-1.")
         with c3:
-            st.success("✅ **Array Conversion**\n\nUbah ke Tensor 3D (RGB).")
+            st.success("✅ **Tensor Conversion**\n\nMengubah citra menjadi array 3D RGB (**Red**, **Green,c**Blue**) sesuai standar CNN MobileNetV2.")
 
-        # --- BAGIAN 2: PREVIEW DATA (10 SAMPEL PERTAMA) ---
-        st.subheader(f"2. *Preview* Data Setelah *Pre-processing*")
+        # --- BAGIAN 2: PREVIEW DATA (BEFORE vs AFTER) ---
+        st.subheader(f"2. Visualisasi Sebelum - Sesudah")
         
-        with st.expander("🔍 Lihat Sampel Hasil *Pre-processing*", expanded=True):
-            st.write("Menampilkan 10 data pertama yang telah di-resize dan siap masuk ke model:")
+        with st.expander("🔍 Lihat Komparasi 10 Citra Pertama", expanded=True):
+            st.write("Perbandingan citra asli vs citra yang masuk ke model:")
             
             # Ambil maksimal 10 gambar
-            preview_limit = 10
-            samples = st.session_state.uploaded_images[:preview_limit]
-            
-            # Grid layout (5 kolom)
-            cols = st.columns(5)
+            samples = st.session_state.uploaded_images[:10]
             
             for i, file in enumerate(samples):
                 try:
+                    # Reset pointer
                     file.seek(0)
-                    img = Image.open(file)
+                    img_original = Image.open(file)
                     
-                    # Simulasi Pre-processing Visual (Resize saja agar terlihat)
-                    # Kita pakai Image.LANCZOS sama seperti fungsi preprocess_image
-                    img_resized = ImageOps.fit(img, (224, 224), Image.LANCZOS)
+                    # Pre-processing Visual (Resize ke 224x224)
+                    img_resized = ImageOps.fit(img_original, (224, 224), Image.LANCZOS)
                     
-                    with cols[i % 5]:
-                        # Tampilkan gambar yang SUDAH di-resize (Pre-processed)
-                        st.image(img_resized, caption=f"Input {i+1}: 224x224px", use_container_width=True)
-                        st.caption(f"📄 {file.name}")
+                    # Tampilkan Side-by-Side
+                    c_h1, c_h2 = st.columns([1, 1])
+                    
+                    with c_h1:
+                        st.image(img_original, caption=f"Sebelum: Asli ({img_original.size[0]}x{img_original.size[1]})", use_container_width=True)
+                    
+                    with c_h2:
+                        st.image(img_resized, caption=f"Sesudah: Input Model (224x224)", width=224) 
+                        # width=224 biar terlihat ukuran aslinya di layar (kotak kecil)
+                    
+                    st.divider() # Garis pemisah antar sampel
+                    
                 except Exception as e:
                     continue
 
-            if len(st.session_state.uploaded_images) > preview_limit:
-                st.info(f"... dan {len(st.session_state.uploaded_images) - preview_limit} data lainnya akan diproses di latar belakang.")
-
-        st.divider()
+            if len(st.session_state.uploaded_images) > 10:
+                st.info(f"... dan {len(st.session_state.uploaded_images) - 10} data lainnya akan diproses di analisis secara mendalam.")
 
         # --- BAGIAN 3: EKSEKUSI KLASIFIKASI ---
-        st.subheader("3. Eksekusi Model")
+        st.subheader("3. Klasifikasi Citra")
         st.write("Data sudah siap. Klik tombol di bawah untuk memulai pemindaian.")
 
         if st.button("🚀 Jalankan Prediksi", type="primary"):
             # CEK MODEL DULU
             if model is None:
-                st.error("❌ Model gagal dimuat. Cek file .h5 Anda.")
+                st.error("❌ Model gagal dimuat. Cek file model Anda.")
                 st.stop()
 
             results = []
@@ -278,7 +281,7 @@ with tab2:
                     file.seek(0)
                     img = Image.open(file)
                     
-                    # 2. Pre-processing Real (Sesuai fungsi)
+                    # 2. Pre-processing Real (Fungsi Utility)
                     processed_img = preprocess_image(img)
 
                     # 3. Prediksi
@@ -323,8 +326,8 @@ with tab2:
                 st.session_state.prediction_results = df_results
                 st.session_state.display_results = df_display
 
-                st.success("✅ Analisis Selesai! Silakan cek tab 'Laporan & Info' untuk hasil detail.")
-                # Opsional: Tampilkan tabel preview kecil di sini juga
+                st.success("✅ Analisis Selesai! Silakan cek Tab 3. Laporan & Informasi untuk hasil detail.")
+                # Preview tabel kecil
                 st.dataframe(df_display.head(), use_container_width=True)
             else:
                 st.warning("⚠️ Tidak ada gambar yang berhasil diproses.")
