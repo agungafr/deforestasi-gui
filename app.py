@@ -236,7 +236,6 @@ with tab2:
                 st.session_state.is_preprocessing_done = True
                 st.rerun()
 
-        # --- VISUALISASI PIPELINE & VALIDASI DATA ---
         else:
             c_info, c_reset = st.columns([3, 1])
             with c_info:
@@ -248,7 +247,6 @@ with tab2:
 
             st.divider()
 
-            # INFO PIPELINE  ---
             st.subheader("1. **Pipeline *Pre-processing* (Inference)**")
             st.info("""
             **Catatan:** Augmentasi Data (Rotasi/*Flip*) hanya dilakukan saat fase ***Training*** **Data** dalam tahap pemodelan. 
@@ -265,11 +263,12 @@ with tab2:
 
             st.divider()
 
-            # --- BAGIAN 2: PREVIEW DATA (BEFORE vs AFTER) ---
             st.subheader(f"2. Visualisasi Sebelum - Sesudah ({len(st.session_state.active_files)} Citra)")
             st.caption("Jika terdapat citra yang tidak sesuai (misal: gelap/rusak), klik tombol **Hapus** agar tidak diikutsertakan dalam klasifikasi.")
 
-            for idx, file in enumerate(st.session_state.active_files):
+            limit_preview = 3
+            
+            def render_image_row(idx, file):
                 try:
                     file.seek(0)
                     img_original = Image.open(file)
@@ -277,7 +276,6 @@ with tab2:
                     
                     with st.container(border=True):
                         c1, c2, c3 = st.columns([2, 2, 1])
-                        
                         with c1:
                             st.image(img_original, caption=f"Sebelum: Asli ({img_original.size[0]}x{img_original.size[1]})", use_container_width=True)
                         with c2:
@@ -287,13 +285,21 @@ with tab2:
                             if st.button("🗑️ Hapus", key=f"del_{idx}_{file.name}", type="secondary"):
                                 st.session_state.active_files.pop(idx)
                                 st.rerun()
-                                
                 except Exception as e:
                     st.error(f"File rusak: {file.name}")
 
+            for i in range(min(limit_preview, len(st.session_state.active_files))):
+                render_image_row(i, st.session_state.active_files[i])
+
+            sisa_gambar = len(st.session_state.active_files) - limit_preview
+            
+            if sisa_gambar > 0:
+                with st.expander(f"📸 Tampilkan {sisa_gambar} visualisasi citra lainnya..."):
+                    for i in range(limit_preview, len(st.session_state.active_files)):
+                        render_image_row(i, st.session_state.active_files[i])
+
             st.divider()
 
-            # --- BAGIAN 3: EKSEKUSI KLASIFIKASI ---
             if len(st.session_state.active_files) > 0:
                 st.subheader("3. Klasifikasi Citra")
                 st.write("Data sudah siap. Klik tombol di bawah untuk memulai pemindaian.")
@@ -347,8 +353,8 @@ with tab2:
                         st.success("✅ Analisis Selesai! Silakan buka Tab 3. Laporan & Informasi untuk hasil detail.")
                         st.balloons()
             else:
-                st.warning("⚠️ Semua data telah dihapus. Silakan upload ulang di Tab 1. *Upload Data*")
-
+                st.warning("⚠️ Semua data telah dihapus. Silakan upload ulang di Tab 1. *Upload* Data")
+              
 with tab3:
     st.header("📊 Laporan Hasil & Statistik")
 
