@@ -86,9 +86,13 @@ def preprocess_image(image_data):
 ### Inisialisasi Session State
 
 if 'uploaded_images' not in st.session_state:
-    st.session_state.uploaded_images = [] # Menyimpan objek file gambar
+    st.session_state.uploaded_images = [] 
+if 'active_files' not in st.session_state:
+    st.session_state.active_files = []
+if 'is_preprocessing_done' not in st.session_state:
+    st.session_state.is_preprocessing_done = False
 if 'prediction_results' not in st.session_state:
-    st.session_state.prediction_results = None # Menyimpan hasil DataFrame
+    st.session_state.prediction_results = None
 if 'confirm_reset' not in st.session_state:
     st.session_state.confirm_reset = False
 if 'uploader_key' not in st.session_state:
@@ -138,7 +142,7 @@ with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     st.warning("""
     **Ketentuan Penggunaan Data**
     
-    1.  **Data** ***Upload*** **:** Pengguna dapat mengunggah data citra satelit hutan dengan format citra **.jpg**, **.jpeg**, **.png**, maupun **file ZIP** yang berisi *batch dataset*.
+    1.  **Data** ***Upload*** **:** Pengguna dapat mengunggah data citra satelit hutan dengan format citra **.jpg**, **.jpeg**, **.png**, maupun **file ZIP (maksimal 100MB)** yang berisi *batch dataset*.
     2.  **Jenis Data:** Model dilatih menggunakan data citra satelit optik (*RGB*). Penggunaan foto objek non-geospasial (misal: foto benda atau manusia) akan menghasilkan prediksi yang tidak valid.
     3.  ***Pre-processing*** **:** Sistem akan secara otomatis melakukan *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (*rescaling* 1./255) sesuai standar *input layer* MobileNetV2, serta melakukan Augmentasi Data sebelum melakukan prediksi.
     """)
@@ -200,137 +204,150 @@ with tab1:
                 st.info(f"... dan {len(valid_images)-10} citra lainnya.")
         else:
             st.warning("⚠️ File ZIP kosong atau tidak berisi gambar yang didukung.")
+
+        if not st.session_state.active_files and st.session_state.uploaded_images:
+            st.session_state.active_files = st.session_state.uploaded_images.copy()
+            st.session_state.is_preprocessing_done = False # Reset status pre-processing
           
 with tab2:
     st.header("⚙️ *Pre-processing* & Klasifikasi")
 
-    if not st.session_state.uploaded_images:
-        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1.")
+    if not st.session_state.active_files:
+        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1. *Upload Data*")
     else:
-        # --- BAGIAN 1: INFO PIPELINE (Berdasarkan BAB 3 Skripsi) ---
-        st.subheader("1. **Pipeline Pre-processing (Inference)**")
-        st.info("""
-        **Catatan:** Sesuai metodologi, Augmentasi Data (Rotasi/Flip) hanya dilakukan saat fase ***Training*** **Data**. 
-        Pada fase aplikasi ini, citra diproses **tanpa distorsi** untuk menjaga keaslian data.
-        """)
-        
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.success("✅ ***Resizing*** **(224x224)**\n\nMenyesuaikan dimensi input CNN MobileNetV2.")
-        with c2:
-            st.success("✅ **Normalisasi (1./255)**\n\nMengubah range piksel dari 0-255 ke 0-1.")
-        with c3:
-            st.success("✅ **Tensor Conversion**\n\nMengubah citra menjadi array 3D RGB (**Red**, **Green,c**Blue**) sesuai standar CNN MobileNetV2.")
+        num_files = len(st.session_state.active_files)
+        st.write(f"Terdapat **{num_files} data citra** dalam antrean.")
 
-        # --- BAGIAN 2: PREVIEW DATA (BEFORE vs AFTER) ---
-        st.subheader(f"2. Visualisasi Sebelum - Sesudah")
-        
-        with st.expander("🔍 Lihat Komparasi 10 Citra Pertama", expanded=True):
-            st.write("Perbandingan citra asli vs citra yang masuk ke model:")
+        if not st.session_state.is_preprocessing_done:
+            st.info("Klik tombol di bawah untuk memulai tahapan *Pre-processing* (*Resizing* & Normalisasi).")
+
+            if st.button("▶️ Lakukan Tahap *Pre-processing*", type="primary"):
+                import time
+                progress_text = "Melakukan *Resizing* ke 224x224 px..."
+                my_bar = st.progress(0, text=progress_text)
+
+                for percent_complete in range(100):
+                    time.sleep(0.01)
+                    my_bar.progress(percent_complete + 1, text=progress_text)
+                
+                time.sleep(0.5)
+                my_bar.empty()
+                
+                st.session_state.is_preprocessing_done = True
+                st.rerun()
+
+        # --- VISUALISASI PIPELINE & VALIDASI DATA ---
+        else:
+            c_info, c_reset = st.columns([3, 1])
+            with c_info:
+                st.success("✅ *Pre-processing* Selesai. Silakan validasi data di bawah.")
+            with c_reset:
+                if st.button("🔄 Ulangi *Pre-processing*"):
+                    st.session_state.is_preprocessing_done = False
+                    st.rerun()
+
+            st.divider()
+
+            # INFO PIPELINE  ---
+            st.subheader("1. **Pipeline *Pre-processing* (Inference)**")
+            st.info("""
+            **Catatan:**Augmentasi Data (Rotasi/*Flip*) hanya dilakukan saat fase ***Training*** **Data** dalam tahap pemodelan. 
+            Pada fase aplikasi ini, citra diproses **tanpa distorsi** untuk menjaga keaslian data.
+            """)
             
-            # Ambil maksimal 10 gambar
-            samples = st.session_state.uploaded_images[:10]
-            
-            for i, file in enumerate(samples):
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.success("✅ ***Resizing*** **(224x224)**\n\nMenyesuaikan dimensi input CNN MobileNetV2.")
+            with c2:
+                st.success("✅ **Normalisasi (1./255)**\n\nMengubah range piksel dari 0-255 ke 0-1.")
+            with c3:
+                st.success("✅ **Tensor Conversion**\n\nMengubah citra menjadi array 3D RGB (**Red**, **Green**, **Blue**) sesuai standar CNN MobileNetV2.")
+
+            st.divider()
+
+            # --- BAGIAN 2: PREVIEW DATA (BEFORE vs AFTER) ---
+            st.subheader(f"2. Visualisasi Sebelum - Sesudah ({len(st.session_state.active_files)} Citra)")
+            st.caption("Jika terdapat citra yang tidak sesuai (misal: gelap/rusak), klik tombol **Hapus** agar tidak diikutsertakan dalam klasifikasi.")
+
+            for idx, file in enumerate(st.session_state.active_files):
                 try:
-                    # Reset pointer
                     file.seek(0)
                     img_original = Image.open(file)
-                    
-                    # Pre-processing Visual (Resize ke 224x224)
                     img_resized = ImageOps.fit(img_original, (224, 224), Image.LANCZOS)
                     
-                    # Tampilkan Side-by-Side
-                    c_h1, c_h2 = st.columns([1, 1])
-                    
-                    with c_h1:
-                        st.image(img_original, caption=f"Sebelum: Asli ({img_original.size[0]}x{img_original.size[1]})", use_container_width=True)
-                    
-                    with c_h2:
-                        st.image(img_resized, caption=f"Sesudah: Input Model (224x224)", width=224) 
-                        # width=224 biar terlihat ukuran aslinya di layar (kotak kecil)
-                    
-                    st.divider() # Garis pemisah antar sampel
-                    
+                    with st.container(border=True):
+                        c1, c2, c3 = st.columns([2, 2, 1])
+                        
+                        with c1:
+                            st.image(img_original, caption=f"Sebelum: Asli ({img_original.size[0]}x{img_original.size[1]})", use_container_width=True)
+                        with c2:
+                            st.image(img_resized, caption="Sesudah: Input (224x224)", width=150)
+                        with c3:
+                            st.write(f"**{file.name}**")
+                            if st.button("🗑️ Hapus", key=f"del_{idx}_{file.name}", type="secondary"):
+                                st.session_state.active_files.pop(idx)
+                                st.rerun()
+                                
                 except Exception as e:
-                    continue
+                    st.error(f"File rusak: {file.name}")
 
-            if len(st.session_state.uploaded_images) > 10:
-                st.info(f"... dan {len(st.session_state.uploaded_images) - 10} data lainnya akan diproses di analisis secara mendalam.")
+            st.divider()
 
-        # --- BAGIAN 3: EKSEKUSI KLASIFIKASI ---
-        st.subheader("3. Klasifikasi Citra")
-        st.write("Data sudah siap. Klik tombol di bawah untuk memulai pemindaian.")
+            # --- BAGIAN 3: EKSEKUSI KLASIFIKASI ---
+            if len(st.session_state.active_files) > 0:
+                st.subheader("3. Klasifikasi Citra")
+                st.write("Data sudah siap. Klik tombol di bawah untuk memulai pemindaian.")
 
-        if st.button("🚀 Jalankan Prediksi", type="primary"):
-            # CEK MODEL DULU
-            if model is None:
-                st.error("❌ Model gagal dimuat. Cek file model Anda.")
-                st.stop()
+                if st.button("🚀 Jalankan Prediksi Final", type="primary", use_container_width=True):
+                    if model is None:
+                        st.error("❌ Model gagal dimuat.")
+                        st.stop()
 
-            results = []
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            total = len(st.session_state.uploaded_images)
+                    results = []
+                    progress_bar = st.progress(0)
+                    total = len(st.session_state.active_files)
 
-            for idx, file in enumerate(st.session_state.uploaded_images):
-                status_text.text(f"Sedang memproses: {file.name} ({idx+1}/{total})")
+                    for idx, file in enumerate(st.session_state.active_files):
+                        try:
+                            file.seek(0)
+                            img = Image.open(file)
+                            processed_img = preprocess_image(img)
+                            prediction = model.predict(processed_img, verbose=0)
+                            prob_val = float(prediction[0][0])
 
-                try:
-                    # 1. Reset pointer & Baca Gambar
-                    file.seek(0)
-                    img = Image.open(file)
-                    
-                    # 2. Pre-processing Real (Fungsi Utility)
-                    processed_img = preprocess_image(img)
+                            if prob_val > 0.5:
+                                label = "Deforestasi"; conf = prob_val
+                            else:
+                                label = "Non-Deforestasi"; conf = 1.0 - prob_val
 
-                    # 3. Prediksi
-                    prediction = model.predict(processed_img, verbose=0)
-                    prob_val = float(prediction[0][0])
+                            results.append({
+                                "Nama File": file.name,
+                                "Prediksi": label,
+                                "Tingkat Kepercayaan": conf,
+                                "Probabilitas Deforestasi": prob_val
+                            })
 
-                    # 4. Tentukan Label
-                    if prob_val > 0.5:
-                        label = "Deforestasi"
-                        conf = prob_val
-                    else:
-                        label = "Non-Deforestasi"
-                        conf = 1.0 - prob_val
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+                        
+                        progress_bar.progress((idx + 1) / total)
 
-                    # 5. Simpan Hasil
-                    item_hasil = {
-                        "Nama File": file.name,
-                        "Prediksi": label,
-                        "Confidence": conf,
-                        "Probabilitas Raw": prob_val
-                    }
-                    results.append(item_hasil)
+                    progress_bar.empty()
 
-                except Exception as e:
-                    st.error(f"Gagal memproses {file.name}. Error: {str(e)}")
+                    if len(results) > 0:
+                        df_results = pd.DataFrame(results)
+                        df_display = df_results.copy()
+                        
+                        if 'Tingkat Kepercayaan' in df_display.columns:
+                            df_display['Tingkat Kepercayaan'] = df_display['Tingkat Kepercayaan'].apply(lambda x: f"{x*100:.2f}%")
 
-                # Update progress
-                progress_bar.progress((idx + 1) / total)
-
-            # Selesai loop
-            status_text.text("✅ Klasifikasi Selesai!")
-            progress_bar.empty()
-
-            # Cek hasil
-            if len(results) > 0:
-                df_results = pd.DataFrame(results)
-                df_display = df_results.copy()
-                
-                if 'Confidence' in df_display.columns:
-                    df_display['Confidence'] = df_display['Confidence'].apply(lambda x: f"{x*100:.2f}%")
-
-                st.session_state.prediction_results = df_results
-                st.session_state.display_results = df_display
-
-                st.success("✅ Analisis Selesai! Silakan cek Tab 3. Laporan & Informasi untuk hasil detail.")
-                # Preview tabel kecil
-                st.dataframe(df_display.head(), use_container_width=True)
+                        st.session_state.prediction_results = df_results
+                        st.session_state.display_results = df_display
+                        
+                        st.success("✅ Analisis Selesai! Silakan buka Tab 3. Laporan & Informasi untuk hasil detail.")
+                        st.balloons()
             else:
-                st.warning("⚠️ Tidak ada gambar yang berhasil diproses.")
+                st.warning("⚠️ Semua data telah dihapus. Silakan upload ulang di Tab 1. *Upload Data*")
 
 with tab3:
     st.header("Laporan Hasil & Statistik")
