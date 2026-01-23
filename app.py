@@ -151,7 +151,7 @@ tab1, tab2, tab3 = st.tabs(["**📂 1.** ***Upload*** **Data**", "**🔍 2. Pros
 
 with tab1:
     st.header("*Upload* Data Citra")
-    st.write("Fitur ini mendukung *upload* **Satu Gambar**, **Banyak Gambar**, atau **File ZIP**.")
+    st.write("Fitur ini mendukung *upload* **Satu Gambar**, **Banyak Gambar**, atau **File ZIP (maksimal 100MB)**.")
 
     # 1. Update parameter 'type' agar menerima ZIP
     uploaded_files = st.file_uploader(
@@ -213,7 +213,7 @@ with tab2:
     st.header("⚙️ *Pre-processing* & Klasifikasi")
 
     if not st.session_state.active_files:
-        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1. *Upload Data*")
+        st.warning("⚠️ Belum ada data citra. Silakan upload di Tab 1. *Upload* Data")
     else:
         num_files = len(st.session_state.active_files)
         st.write(f"Terdapat **{num_files} data citra** dalam antrean.")
@@ -223,7 +223,7 @@ with tab2:
 
             if st.button("▶️ Lakukan Tahap *Pre-processing*", type="primary"):
                 import time
-                progress_text = "Melakukan *Resizing* ke 224x224 px..."
+                progress_text = "Melakukan *Resizing* ke ukuran 224x224 px..."
                 my_bar = st.progress(0, text=progress_text)
 
                 for percent_complete in range(100):
@@ -251,8 +251,8 @@ with tab2:
             # INFO PIPELINE  ---
             st.subheader("1. **Pipeline *Pre-processing* (Inference)**")
             st.info("""
-            **Catatan:**Augmentasi Data (Rotasi/*Flip*) hanya dilakukan saat fase ***Training*** **Data** dalam tahap pemodelan. 
-            Pada fase aplikasi ini, citra diproses **tanpa distorsi** untuk menjaga keaslian data.
+            **Catatan:** Augmentasi Data (Rotasi/*Flip*) hanya dilakukan saat fase ***Training*** **Data** dalam tahap pemodelan. 
+            Pada aplikasi ini, citra diproses **tanpa distorsi** untuk menjaga keaslian data.
             """)
             
             c1, c2, c3 = st.columns(3)
@@ -261,7 +261,7 @@ with tab2:
             with c2:
                 st.success("✅ **Normalisasi (1./255)**\n\nMengubah range piksel dari 0-255 ke 0-1.")
             with c3:
-                st.success("✅ **Tensor Conversion**\n\nMengubah citra menjadi array 3D RGB (**Red**, **Green**, **Blue**) sesuai standar CNN MobileNetV2.")
+                st.success("✅ ***Tensor Conversion***\n\nMengubah citra menjadi array 3D RGB (*Red*, *Green*, *Blue*) sesuai standar CNN MobileNetV2.")
 
             st.divider()
 
@@ -298,7 +298,7 @@ with tab2:
                 st.subheader("3. Klasifikasi Citra")
                 st.write("Data sudah siap. Klik tombol di bawah untuk memulai pemindaian.")
 
-                if st.button("🚀 Jalankan Prediksi Final", type="primary", use_container_width=True):
+                if st.button("🚀 Jalankan Prediksi", type="primary", use_container_width=True):
                     if model is None:
                         st.error("❌ Model gagal dimuat.")
                         st.stop()
@@ -350,13 +350,14 @@ with tab2:
                 st.warning("⚠️ Semua data telah dihapus. Silakan upload ulang di Tab 1. *Upload Data*")
 
 with tab3:
-    st.header("Laporan Hasil & Statistik")
+    st.header("📊 Laporan Hasil & Statistik")
 
     if st.session_state.prediction_results is None:
-        st.info("Data belum diproses. Lakukan klasifikasi di Tab 2. Proses Klasifikasi.")
+        st.info("⚠️ Data belum diproses. Lakukan klasifikasi di Tab 2. Proses Klasifikasi.")
     else:
         df_res = st.session_state.prediction_results
-        df_show = st.session_state.display_results
+        df_show = st.session_state.display_results.copy()
+        df_show.index = range(1, len(df_show) + 1)
 
         # 1. Metrik Ringkasan
         col1, col2, col3 = st.columns(3)
@@ -379,7 +380,7 @@ with tab3:
             
             # Warna custom: Hijau & Merah
             colors = ['#B22B27', '#71BC68'] 
-            bars = ax.bar(['Non-Defor', 'Defor'], [n_non, n_defor], color=colors)
+            bars = ax.bar(['Non-Deforestasi', 'Deforestasi'], [n_non, n_defor], color=colors)
 
             # Menambahkan angka di atas batang
             for bar in bars:
@@ -387,21 +388,18 @@ with tab3:
                 ax.text(bar.get_x() + bar.get_width()/2, yval, int(yval), ha='center', va='bottom')
 
             ax.set_title("Distribusi Kelas")
-            ax.set_ylabel("Jumlah Citra")
-            
-            # Mempercantik grafik (hapus garis atas & kanan)
+            ax.set_ylabel("Jumlah Citra")    
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             
-            # PENTING: st.pyplot dipanggil SEKALI saja dan DI DALAM with c_chart
             st.pyplot(fig, use_container_width=True)
 
-        # --- BAGIAN TABEL ---
+        # Tabel
         with c_table:
             st.subheader("Tabel Detail")
             st.dataframe(df_show, use_container_width=True, height=350)
 
-            # Tombol Download
+            # Tombol Unduh
             csv = convert_df_to_csv(df_res)
             st.download_button(
                 label="📥 Unduh CSV",
@@ -424,8 +422,8 @@ with tab3:
     st.divider()
     if st.button("🔄 Reset Aplikasi"):
         st.session_state.uploaded_images = []
+        st.session_state.active_files = []
         st.session_state.prediction_results = None
         st.session_state.display_results = None
-
         st.session_state.uploader_key += 1
         st.rerun()
