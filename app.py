@@ -144,7 +144,7 @@ with st.expander("ℹ️ Tentang Aplikasi dan Model"):
     
     1.  **Data** ***Upload*** **:** Pengguna dapat mengunggah data citra satelit hutan dengan format citra **.jpg**, **.jpeg**, **.png**, maupun **file ZIP (maksimal 100MB)** yang berisi *batch dataset*.
     2.  **Jenis Data:** Model dilatih menggunakan data citra satelit optik (*RGB*). Penggunaan foto objek non-geospasial (misal: foto benda atau manusia) akan menghasilkan prediksi yang tidak valid.
-    3.  ***Pre-processing*** **:** Sistem akan secara otomatis melakukan *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (*rescaling* 1./255) sesuai standar *input layer* MobileNetV2, serta melakukan Augmentasi Data sebelum melakukan prediksi.
+    3.  ***Pre-processing*** **:** Sistem melakukan tahap *resizing* citra ke ukuran **224x224 piksel**, normalisasi nilai piksel (*rescaling* 1./255) sesuai standar *input layer* MobileNetV2 sebelum melakukan prediksi.
     """)
 
 tab1, tab2, tab3 = st.tabs(["**📂 1.** ***Upload*** **Data**", "**🔍 2. Proses Klasifikasi**", "**📊 3. Laporan & Informasi**"])
@@ -205,9 +205,11 @@ with tab1:
         else:
             st.warning("⚠️ File ZIP kosong atau tidak berisi gambar yang didukung.")
 
-        if not st.session_state.active_files and st.session_state.uploaded_images:
-            st.session_state.active_files = st.session_state.uploaded_images.copy()
-            st.session_state.is_preprocessing_done = False # Reset status pre-processing
+        if st.session_state.uploaded_images:
+            if len(st.session_state.active_files) != len(st.session_state.uploaded_images):
+                st.session_state.active_files = st.session_state.uploaded_images.copy()
+                st.session_state.is_preprocessing_done = False
+                st.toast(f"Data diperbarui: {len(st.session_state.active_files)} citra siap diproses.", icon="🔄")
           
 with tab2:
     st.header("⚙️ *Pre-processing* & Klasifikasi")
